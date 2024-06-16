@@ -1,18 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Canvas</title>
-    <style>
-        body { margin: 0; }
-        canvas { display: block; }
-    </style>
-</head>
-<body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="tetris_js/util.js"></script>
-    <script src="tetris_js/logic.js"></script>
-    <script src="tetris_js/main.js"></script>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="vendor/picocss/pico/css/pico.min.css">
+        <title>Three.js Canvas</title>
+        <style>
+            #game_canvas {
+                width: 80%;
+                height: 800px;
+                margin: auto;
+            }
+            .text-center {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="container">
+            <ul>
+                <li><strong>Tetris for Web</strong></li>
+            </ul>
+            <ul>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Products</a></li>
+            </ul>
+        </nav>
+        <div class="container">
+            <div class="grid">
+                <div id="game_canvas"></div>
+                <div style="margin-top: 50px;">
+                    <h1 class="text-center">Leaderboard</h1>
+                    
+                </div>
+            </div>
+        </div>
+
+
+        <!-- SCRIPTS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="tetris_js/util.js"></script>
+        <script src="tetris_js/logic.js"></script>
+        <script src="tetris_js/text.js"></script>
+        <script src="tetris_js/main.js"></script>
+    </body>
 </html>

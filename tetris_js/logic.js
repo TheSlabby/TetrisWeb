@@ -1,8 +1,9 @@
 const BOX_SIZE = .85;
 
 class Game {
-    constructor(scene) {
+    constructor(scene, textManager) {
         this.scene = scene;
+        this.textManager = textManager;
         this.lastFrameTime = performance.now();
         this.lastShapeUpdate = performance.now();
 
