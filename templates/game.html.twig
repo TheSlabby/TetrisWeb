@@ -22,20 +22,73 @@
                 <li><strong>Tetris for Web</strong></li>
             </ul>
             <ul>
-                <li><a href="#">About</a></li>
-                <li><a href="#">Services</a></li>
-                <li><a href="#">Products</a></li>
+                <li><a href="index.php" class="contrast">Play Tetris</a></li>
+                <li><a href="leaderboard.php" class="contrast">My Account</a></li>
             </ul>
         </nav>
+
+        <!-- LEADERBOARD -->
         <div class="container">
             <div class="grid">
                 <div id="game_canvas"></div>
                 <div style="margin-top: 50px;">
                     <h1 class="text-center">Leaderboard</h1>
-                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <!-- <th scope="col">Score</th> -->
+                                <th scope="col">Lines Cleared</th>
+                                <th scope="col">Game Time</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for score in topScores %}
+                            <tr>
+                                <td>{{ score.player_name }}</td>
+                                {# <td>{{ score.score }}</td> #}
+                                <td>{{ score.lines_cleared }}</td>
+                                <td>{{ score.game_duration }} seconds</td>
+                                <td>{{ score.date_played|date("m/d/Y") }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <!-- MODAL -->
+         <dialog id="leaderboard-modal" style="z-index: 5;">
+            <article>
+                <header>
+                <button aria-label="Close" rel="prev" id="close-modal"></button>
+                <p>
+                    <strong>🏆 You made it on the leaderboard!</strong>
+                </p>
+                </header>
+                <p id="modal-message">
+                    You made it to the leaderboard with a score of: ?
+                </p>
+                <form action="savegamedata.php" method="post">
+                    <fieldset>
+                        <input
+                            name="name"
+                            type="text"
+                            placeholder="Name to be displayed on leaderboard"
+                        />
+                        <input type="hidden" id="score" name="score" value="0">
+                        <input type="hidden" id="lines_cleared" name="lines_cleared" value="0">
+                        <input type="hidden" id="game_duration" name="game_duration" value="0">
+                    </fieldset>
+                    <input
+                        type="submit"
+                        value="Save"
+                    />
+                </form>
+            </article>
+        </dialog>
 
 
         <!-- SCRIPTS -->

@@ -1,6 +1,6 @@
 const BOX_SIZE = .85;
 const INITIAL_DROP_SPEED = 1;
-const DROP_SPEED_ACCELERATE = 1 - 150 * .006; // should leave .1 second speed after 150 lines
+const DROP_SPEED_ACCELERATE = .006; // should leave .1 second speed after 150 lines
 
 class Game {
     constructor(scene, textManager) {
@@ -12,6 +12,8 @@ class Game {
 
         // game vars
         this.linesCleared = 0;
+        this.score = 0;
+        this.gameStartTime = performance.now();
 
         // initialize sounds
         this.singleClearSound = new Audio('assets/tetris line clear.mp3');
@@ -221,6 +223,21 @@ class Game {
         // set game over text
         this.textManager.loadText('GAME OVER!\nYou cleared ' + this.linesCleared + ' lines.')
 
+        // TODO make score system
+        this.score = this.linesCleared;
+
+        // show modal to save score
+        const modal = document.getElementById('leaderboard-modal');
+        const doc = document.documentElement;
+        doc.classList.add('modal-is-open', 'modal-is-opening')
+        modal.setAttribute('open', 'open');
+        document.getElementById('modal-message').innerHTML = 'You made it to the leaderboard with a score of: ' + this.score;
+        // now set modal properties
+        document.getElementById('score').value = this.score;
+        document.getElementById('lines_cleared').value = this.linesCleared;
+        document.getElementById('game_duration').value = Math.round((performance.now() - this.gameStartTime) / 1000);
+
+        // now reset everything
         this.linesCleared = 0;
         this.speed = INITIAL_DROP_SPEED;
         for (let x = 0; x < 10; x++) {
@@ -229,8 +246,6 @@ class Game {
             }
         }
         this.loadNewShape();
-
-        // TODO send score to database
     }
 
     // runs every frame

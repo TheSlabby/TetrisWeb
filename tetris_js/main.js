@@ -37,7 +37,8 @@ let soundPlaying = false;
 renderer.domElement.addEventListener('click', () => {
     if (!soundPlaying) {
         soundPlaying = true;
-        const sound = new Audio('assets/tetris remix.mp3');
+        // const sound = new Audio('assets/tetris remix.mp3');
+        const sound = new Audio('assets/Tetris.mp3');
         sound.volume = 0.8;
         sound.loop = true;
         sound.play();
@@ -48,11 +49,17 @@ renderer.domElement.addEventListener('click', () => {
 const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
 scene.add(ambientLight);
 const pointLight = new THREE.PointLight(0xffffff, 1, 100); // Point light with intensity 1 and distance 100
-pointLight.position.set(5, 5, 5); // Position the light to illuminate the scene
+pointLight.position.set(5, -5, 5); // Position the light to illuminate the scene
 scene.add(pointLight);
 
 // now initalize tetris game object
 const game = new Game(scene, textManager);
+
+
+// handle modal close
+document.getElementById('close-modal').addEventListener("click", () => {
+    document.getElementById('leaderboard-modal').removeAttribute('open');
+});
 
 // Main loop
 function animate() {
@@ -61,5 +68,4 @@ function animate() {
     game.render();
     renderer.render(scene, camera);
 }
-
 animate();

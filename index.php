@@ -5,6 +5,15 @@ require 'twig.php';
 
 use App\SQLiteConnection;
 
-$pdo = (new SQLiteConnection())->connect();
+// setup database
+$conn_obj = new SQLiteConnection();
+$conn_obj->initialize();
+$pdo = $conn_obj->getPDO();
 
-echo $twig->render('game.html.twig');
+// get leaderboard
+$stmt = $pdo->query("SELECT player_name, score, lines_cleared, game_duration, date_played FROM tetris_scores ORDER BY score DESC LIMIT 20");
+$topScores = $stmt->fetchAll();
+
+echo $twig->render('game.html.twig', [
+    'topScores' => $topScores,
+]);
