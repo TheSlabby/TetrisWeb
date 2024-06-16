@@ -37,7 +37,8 @@ let soundPlaying = false;
 renderer.domElement.addEventListener('click', () => {
     if (!soundPlaying) {
         soundPlaying = true;
-        const sound = new Audio('assets/Tetris.mp3');
+        const sound = new Audio('assets/tetris remix.mp3');
+        sound.volume = 0.8;
         sound.loop = true;
         sound.play();
     }

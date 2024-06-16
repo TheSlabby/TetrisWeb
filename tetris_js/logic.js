@@ -1,4 +1,6 @@
 const BOX_SIZE = .85;
+const INITIAL_DROP_SPEED = 1;
+const DROP_SPEED_ACCELERATE = 1 - 150 * .006; // should leave .1 second speed after 150 lines
 
 class Game {
     constructor(scene, textManager) {
@@ -6,13 +8,23 @@ class Game {
         this.textManager = textManager;
         this.lastFrameTime = performance.now();
         this.lastShapeUpdate = performance.now();
+        this.speed = INITIAL_DROP_SPEED;
+
+        // game vars
+        this.linesCleared = 0;
+
+        // initialize sounds
+        this.singleClearSound = new Audio('assets/tetris line clear.mp3');
+        this.fullClearSound = new Audio('assets/tetris full clear.mp3');
+        this.dropSound = new Audio('assets/tetris drop sound.mp3');
 
         // this will hold the current grid of blocks.
         this.grid = [];
         // this will hold the actual cubes corresponding to each position
         this.cubes = [];
 
-        this.loadNewShape();
+        // initialization functions
+        this.updateText();
 
         // initialize grid & cubes
         for (let i = 0; i < 10; i++) {
@@ -31,6 +43,9 @@ class Game {
                 this.cubes[i][j] = cube;
             }
         }
+
+        // load shape after grid initialized
+        this.loadNewShape();
 
         // keyboard input
         window.addEventListener('keydown', this.handleKeyDown.bind(this));
@@ -75,6 +90,63 @@ class Game {
                 }
             }
         }
+
+        // finished locking shape
+        let lastClears = this.linesCleared;
+        this.checkForClears();
+        let totalClears = this.linesCleared - lastClears;
+
+        if (totalClears > 0) {
+            this.updateText();
+            if (totalClears < 4) {
+                this.singleClearSound.play();
+            } else {
+                this.fullClearSound.play();
+            }
+        } else {
+            this.dropSound.play();
+        }
+
+        this.loadNewShape();  
+    }
+
+    // check for clears
+    checkForClears() {
+        for (let y = 0; y < 20; y++) {
+            for (let x = 0; x < 10; x++) {
+                if (this.grid[x][y] == 0)
+                    break;
+
+                // check if the whole row has been iterated
+                if (x == 9) {
+                    console.log("Clearing row: " + y);
+                    for (let i = 0; i < 10; i++) {
+                        this.grid[i][y] = 0;
+
+                        //now move all rows above this one down
+                        for (let j = y; j > 0; j--) {
+                            if (j > 0) {
+                                //set this cell to the cell above
+                                this.grid[i][j] = this.grid[i][j-1];
+                            } else {
+                                //because its the top row, just clear it (j-1 = -1)
+                                this.grid[i][j] = 0;
+                            }
+                        }
+
+                    }
+
+                    // done clearing row, update text
+                    this.linesCleared += 1;
+                    this.speed -= DROP_SPEED_ACCELERATE;
+                }
+            }
+        }
+    }
+
+    // update textmanager text
+    updateText() {
+        this.textManager.loadText('Lines Cleared: ' + this.linesCleared);
     }
 
     // rotate shape
@@ -136,6 +208,29 @@ class Game {
         const randomIndex = Math.floor(Math.random() * keys.length);
         this.shapeID = keys[randomIndex];
         this.shape = shapes[this.shapeID];
+
+        // check for conflicts
+        if (!this.updateShape(new THREE.Vector2())) {
+            // conflict, so run game over sequence
+            this.endGame();
+        }
+    }
+
+    // game over sequence
+    endGame() {
+        // set game over text
+        this.textManager.loadText('GAME OVER!\nYou cleared ' + this.linesCleared + ' lines.')
+
+        this.linesCleared = 0;
+        this.speed = INITIAL_DROP_SPEED;
+        for (let x = 0; x < 10; x++) {
+            for (let y = 0; y < 20; y++) {
+                this.grid[x][y] = 0;
+            }
+        }
+        this.loadNewShape();
+
+        // TODO send score to database
     }
 
     // runs every frame
@@ -145,12 +240,10 @@ class Game {
         const dt = (currentFrameTime - this.lastFrameTime) / 1000;
         const timeSinceLastShapeUpdate = (currentFrameTime - this.lastShapeUpdate) / 1000;
 
-        if (timeSinceLastShapeUpdate > 1) {
+        if (timeSinceLastShapeUpdate > this.speed) {
             if (!this.updateShape(new THREE.Vector2(0, 1))) {
                 console.log('CANT MOVE DOWN, LETS LOCK THIS BAD BOY IN PLACE!!!!');
-                this.lockShape();
-                this.loadNewShape();            
-            }
+                this.lockShape();            }
             this.lastShapeUpdate = currentFrameTime;
         }
 
@@ -185,10 +278,10 @@ class Game {
             case 'ArrowDown':
                 if (this.updateShape(new THREE.Vector2(0, 1))) {
                     // successfulyl moved down, so reset timer
-                    this.lastShapeUpdate = performance.now();
+                    this.lastShapeUpdate = performance.now() - (this.speed/1.3 * 1000);
                 }
                 break;
-            case 'ArrowUp':
+            case ' ':
                 // attempt to rotate
                 let result = this.rotateShape();
                 if (result) {
@@ -196,6 +289,14 @@ class Game {
                     this.shape = result;
                 }
                 break;
+            case 'ArrowUp':
+                // force drop
+                while (true) {
+                    if (!this.updateShape(new THREE.Vector2(0, 1))) {
+                        this.lockShape();
+                        break;
+                    }
+                }
         }
     }
 

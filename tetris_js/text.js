@@ -2,14 +2,15 @@ class TextManager {
     constructor(scene) {
         // Load the font and create the text
         this.loader = new THREE.FontLoader();
+        this.scene = scene;
         this.material = new THREE.MeshPhongMaterial({ color: 0xffffff });
-        this.loadText('Lines Cleared: 0');
     }
 
     loadText(string) {
         //first delete old text, if it exists
         if (this.textMesh) {
             this.scene.remove(this.textMesh);
+            this.textMesh = null;
         }
 
         this.loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
@@ -27,7 +28,7 @@ class TextManager {
 
             this.textMesh = new THREE.Mesh(geometry, this.material);
 
-            scene.add(this.textMesh);
+            this.scene.add(this.textMesh);
 
             // Center the text
             // geometry.computeBoundingBox();
