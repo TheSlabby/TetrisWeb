@@ -54,7 +54,7 @@ class Game {
     }
 
     // make the block fall
-    updateShape(translation) {
+    updateShape(translation, draw=true) {
         //first, check for conflicts
         const size = this.shape.length;
         let success = true;
@@ -64,8 +64,10 @@ class Game {
                 let actualY = y + this.position.y + translation.y;
                 if (this.shape[x][y]) {
                     //make sure this shape is falling onto an empty block
-                    if (actualX >= 0 && actualX < 10 && actualY >= 0 && actualY < 20 && this.grid[actualX][actualY] == 0) {
-                        this.cubes[actualX][actualY].visible = true;
+                    if (actualX >= 0 && actualX < 10 && actualY >= 0 && actualY < 20 && this.grid[actualX][actualY] <= 0) {
+                        // set this cube to visible (if draw = true)
+                        if (draw)
+                            this.cubes[actualX][actualY].visible = true;
                     } else {
                         success = false;
                     }
@@ -112,11 +114,48 @@ class Game {
         this.loadNewShape();  
     }
 
+    // create drop preview (where the shape will land)
+    dropPreview() {
+        let lastPosition = this.position.clone();
+
+        // drop until it cant drop anymore
+        while (true) {
+            if (!this.updateShape(new THREE.Vector2(0, 1), false)) {
+                break;
+            }
+        }
+
+        // // now reset the last drop preview
+        // for (let x = 0; x < 10; x++) {
+        //     for (let y = 0; y < 20; y++) {
+        //         if (this.grid[x][y] == -1)
+        //             this.grid[x][y] = 0;
+        //     }
+        // }
+
+        // now draw preview in grid
+        const size = this.shape.length;
+        for (let x = 0; x < size; x++) {
+            for (let y = 0; y < size; y++) {
+                let actualX = x + this.position.x;
+                let actualY = y + this.position.y;
+                if (this.shape[x][y]) {
+                    this.setCubeColor(new THREE.Vector2(actualX, actualY), colors['PREVIEW']); // locked color
+                    this.cubes[actualX][actualY].visible = true;
+                    // lock in place by adding to this.grid
+                }
+            }
+        }
+
+        // now reset position
+        this.position = lastPosition;
+    }
+
     // check for clears
     checkForClears() {
         for (let y = 0; y < 20; y++) {
             for (let x = 0; x < 10; x++) {
-                if (this.grid[x][y] == 0)
+                if (this.grid[x][y] <= 0)
                     break;
 
                 // check if the whole row has been iterated
@@ -167,7 +206,7 @@ class Game {
             for (let y = 0; y < N; y++) {
                 const actualX = x + this.position.x;
                 const actualY = y + this.position.y;
-                if (!(actualX >= 0 && actualX < 10 && actualY >= 0 && actualY < 20 && this.grid[actualX][actualY] == 0)) {
+                if (!(actualX >= 0 && actualX < 10 && actualY >= 0 && actualY < 20 && this.grid[actualX][actualY] <= 0)) {
                     success = false;
                 }
             }
@@ -183,12 +222,10 @@ class Game {
             for (let y = 0; y < 20; y++) {
                 if (this.grid[x][y] != 0) {
                     this.cubes[x][y].visible = true;
-                    // draw a lighter shade of the actual color (because its locked)
                     const color = lockedColors[this.grid[x][y]];
                     this.setCubeColor(new THREE.Vector2(x, y), color); // locked color
                 } else {
                     this.cubes[x][y].visible = false;
-                    this.setCubeColor(new THREE.Vector2(x, y), colors[this.shapeID]); // not locked in color
                 }
             }
         }
@@ -263,8 +300,13 @@ class Game {
         }
 
 
+
         // first update cubes
         this.updateCubes();
+        
+        // finally draw drop preview
+        this.dropPreview();
+
         // update shape
         if (this.shape) {
             const size = this.shape.length;
@@ -274,10 +316,12 @@ class Game {
                     let actualY = y + this.position.y;
                     if (this.shape[x][y] && actualX >= 0 && actualX < 10 && actualY >= 0 && actualY < 20) {
                         this.cubes[actualX][actualY].visible = true;
+                        this.setCubeColor(new THREE.Vector2(actualX, actualY), colors[this.shapeID]);
                     }
                 }
             }
         }
+
     }
 
 
@@ -362,7 +406,8 @@ const colors = {
     'T': 0xff00ff,
     'S': 0x00ff00,
     'Z': 0xff0000,
-    'O': 0xffff00
+    'O': 0xffff00,
+    'PREVIEW': 0x777777,
 }
 const lockedColors = {
     'I': 0x99ffff,
@@ -371,5 +416,5 @@ const lockedColors = {
     'T': 0xff99ff,
     'S': 0x99ff99,
     'Z': 0xff9999,
-    'O': 0xffff99
+    'O': 0xffff99,
 }

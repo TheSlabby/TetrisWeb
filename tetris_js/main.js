@@ -32,7 +32,7 @@ window.addEventListener('resize', resizeRendererToDisplaySize);
 // 3D TEXT
 const textManager = new TextManager(scene);
 
-//play sound
+// play sound
 let soundPlaying = false;
 renderer.domElement.addEventListener('click', () => {
     if (!soundPlaying) {
