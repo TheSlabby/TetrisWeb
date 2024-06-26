@@ -191,7 +191,7 @@ class Game {
     }
 
     // rotate shape
-    rotateShape() {
+    rotateShapeCCW(force = false) {
         let success = true;
         const N = this.shape.length;
         const result = Array.from({ length: N }, () => Array(N).fill(0));
@@ -212,8 +212,22 @@ class Game {
             }
         }
 
-        if (success)
+        if (force || success)
             return result;
+    }
+    
+    // just rotate CCW three times to rotate CW 1 time
+    rotateShapeCW() {
+        let initialShape = this.shape.map(row => row.slice()); // copy this.shape
+
+        this.shape = this.rotateShapeCCW(true);
+        this.shape = this.rotateShapeCCW(true);
+        let result = this.rotateShapeCCW();
+        if (result) {
+            this.shape = result;
+        } else {
+            this.shape = initialShape;
+        }
     }
 
     // should run when the grid is changed
@@ -342,7 +356,7 @@ class Game {
                 break;
             case ' ':
                 // attempt to rotate
-                let result = this.rotateShape();
+                let result = this.rotateShapeCW();
                 if (result) {
                     // rotate success, so set new shape
                     this.shape = result;
